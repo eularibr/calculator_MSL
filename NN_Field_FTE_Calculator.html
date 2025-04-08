@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field FTE Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .calculadora {
+            background-color: #fff;
+            padding: 15px; 
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%; 
+            max-width: 500px; 
+        }
+        .header {
+            position: relative; /* Permite posicionar o logo dentro da header */
+            display: flex;
+            justify-content: center; /* Centraliza o título */
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .header .logo {
+            position: absolute;
+            left: 0; /* Posiciona o logo no canto esquerdo */
+            width: 60px; /* Ajuste o tamanho do logo */
+            height: auto;
+        }
+        .calculadora h1 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem; 
+        }
+        .calculadora label {
+            display: block;
+            margin-bottom: 6px; 
+            font-size: 0.9rem; 
+        }
+        .calculadora input {
+            width: calc(100% - 20px); 
+            padding: 8px; 
+            margin-bottom: 8px; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem; 
+        }
+        .percent-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px; 
+        }
+        .percent-container label {
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 0;
+            font-size: 0.9rem; 
+        }
+        .percent-container input {
+            width: 20%; 
+            padding: 8px; 
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem; 
+        }
+        .calculadora button {
+            width: 100%;
+            padding: 8px; 
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem; 
+        }
+        .calculadora button:hover {
+            background-color: #0056b3;
+        }
+        .resultado {
+            margin-top: 15px; 
+            font-size: 0.9rem; 
+        }
+
+        /* Botão de informação */
+        .info-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .info-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilo do pop-up */
+        .popup {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .popup-content h2 {
+            margin-top: 0;
+        }
+
+        .popup-content .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .popup-content .close:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão para abrir o pop-up -->
+    <button class="info-button" onclick="abrirPopup()">O que é esta calculadora?</button>
+
+    <!-- Pop-up modal -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="fecharPopup()">&times;</span>
+            <h2>Sobre a Calculadora de FTE</h2>
+            <p>Esta calculadora é usada para estimar o número de FTEs (Full-Time Equivalents) necessários para atender a um painel de KOLs (Key Opinion Leaders).</p>
+            <h3>Fórmulas</h3>
+            <ul>
+                <li><strong>Painel 1:</strong> <code>P * Porcentagem 1</code></li>
+                <li><strong>Painel 2:</strong> <code>P * Porcentagem 2</code></li>
+                <li><strong>N_visitas:</strong> <code>(P * V) / (D * v)</code></li>
+                <li><strong>N_painel:</strong> <code>P / p</code></li>
+                <li><strong>N_final:</strong> <code>Máximo(N_painel, N_visitas)</code></li>
+            </ul>
+            <h3>Significado das variáveis</h3>
+            <ul>
+                <li><strong>P:</strong> Número de KOLs no painel</li>
+                <li><strong>V:</strong> Média de interações por KOL</li>
+                <li><strong>D:</strong> Média de dias úteis por mês</li>
+                <li><strong>v:</strong> Média de interações por dia útil</li>
+                <li><strong>p:</strong> Número de KOLs por MSL</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="calculadora">
+        <div class="header">
+            <img src="novo_nordisk_logo.png" alt="Novo Nordisk Logo" class="logo">
+            <h1>Field FTE Calculator</h1>
+        </div>
+        <label for="P">Número de KOLs no painel (P):</label>
+        <input type="number" id="P" value="320">
+        
+        <div class="percent-container">
+            <label for="percent1">Porcentagem 1 (%):</label>
+            <input type="number" id="percent1" value="50" oninput="atualizarPorcentagem('percent1', 'percent2')">
+            <label for="V1">Média de interações (V1):</label>
+            <input type="number" id="V1" value="2">
+        </div>
+        
+        <div class="percent-container">
+            <label for="percent2">Porcentagem 2 (%):</label>
+            <input type="number" id="percent2" value="50" oninput="atualizarPorcentagem('percent2', 'percent1')">
+            <label for="V2">Média de interações (V2):</label>
+            <input type="number" id="V2" value="1">
+        </div>
+        
+        <label for="D">Média de dias úteis por mês (D):</label>
+        <input type="number" id="D" value="18">
+        
+        <label for="Z">Média de interações por dia útil (v):</label>
+        <input type="number" id="Z" value="3">
+        
+        <label for="p">Número de KOLs por MSL (p):</label>
+        <input type="number" id="p" value="80">
+        
+        <button onclick="calcular()">Calcular</button>
+        
+        <div class="resultado" id="resultado"></div>
+    </div>
+
+    <script>
+        function abrirPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function fecharPopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        // Fecha o pop-up ao clicar fora dele
+        window.onclick = function(event) {
+            const popup = document.getElementById('popup');
+            if (event.target === popup) {
+                popup.style.display = 'none';
+            }
+        }
+
+        function atualizarPorcentagem(idAtual, idOutro) {
+            const valorAtual = parseFloat(document.getElementById(idAtual).value) || 0;
+            const valorOutro = 100 - valorAtual;
+            document.getElementById(idOutro).value = valorOutro >= 0 ? valorOutro : 0;
+        }
+    
+        function calcular() {
+            var P = parseFloat(document.getElementById('P').value);
+            var V1 = parseFloat(document.getElementById('V1').value);
+            var V2 = parseFloat(document.getElementById('V2').value);
+            var D = parseFloat(document.getElementById('D').value);
+            var Z = parseFloat(document.getElementById('Z').value);
+            var p = parseFloat(document.getElementById('p').value);
+            var percent1 = parseFloat(document.getElementById('percent1').value) / 100;
+            var percent2 = parseFloat(document.getElementById('percent2').value) / 100;
+    
+            // Cálculo ajustado com porcentagens
+            var painel1 = P * percent1;
+            var painel2 = P * percent2;
+            var N_visitas1 = (painel1 * V1) / (D * Z);
+            var N_visitas2 = (painel2 * V2) / (D * Z);
+            var N_visitas1_arredondado = Math.ceil(N_visitas1); // Arredondar para cima
+            var N_visitas2_arredondado = Math.ceil(N_visitas2);
+            var N_painel = P / p;
+            var N_final = Math.max(N_painel, N_visitas1, N_visitas2);
+    
+            document.getElementById('resultado').innerHTML = `
+                <p>Painel 1 (${(percent1 * 100).toFixed(0)}%): ${painel1.toFixed(2)}</p>
+                <p>Painel 2 (${(percent2 * 100).toFixed(0)}%): ${painel2.toFixed(2)}</p>
+                <p>N_visitas para Porcentagem 1: ${N_visitas1.toFixed(2)}
+                    <span style="margin-left: 50px;">Arredondado: ${N_visitas1_arredondado}</span>
+                </p>
+                <p>N_visitas para Porcentagem 2: ${N_visitas2.toFixed(2)}
+                    <span style="margin-left: 50px;">Arredondado: ${N_visitas2_arredondado}</span>
+                </p>
+                <p>N_painel: ${N_painel.toFixed(2)}</p>
+                <p>N_final: ${N_final.toFixed(2)}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
